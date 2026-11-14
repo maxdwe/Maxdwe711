@@ -23,7 +23,7 @@ OUT = os.path.join(HERE, "member_vs_nonmember.mp4")
 WAV = os.path.join(HERE, "_audio_member.wav")
 VO_DIR = os.path.join(HERE, "voiceover_member")
 SR = 44100
-DURATION = 60.0
+DURATION = 61.5
 
 # ---------------------------------------------------------------- fon & warna
 FD = "/usr/share/fonts/opentype/inter/"
@@ -82,7 +82,7 @@ SCENES = [
     ("member_pm", 18.0, 25.0, "evening"),
     ("non", 25.0, 35.0, "day"),
     ("reveal", 35.0, 48.0, None),
-    ("ending", 48.0, 60.0, "sunset"),
+    ("ending", 48.0, 61.5, "sunset"),
 ]
 
 # (fail, masa mula) - voiceover diletak pada masa tetap ikut skrip
@@ -846,7 +846,7 @@ def montage(mt):
 
 def scene_ending(t, lt, dur):
     Z = dict(zoom0=1.0, zoom1=1.18, pan=(0, -60))
-    if lt > 7.3:
+    if lt > 6.6:
         return scene_ending_montage(t, lt)
     frame = camera("sunset", lt, dur, **Z).convert("RGBA")
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -863,7 +863,7 @@ def scene_ending(t, lt, dur):
     lay.alpha_composite(rim.filter(ImageFilter.GaussianBlur(3)))
     golfer(d, gx, gy, size * gsc, "walk", (14, 12, 18), ph=lt * 6, face=1)
     darken(lay, 1150, 700, 1.0)
-    out1 = 1 - prog(lt, 7.2, 0.3)
+    out1 = 1 - prog(lt, 6.4, 0.25)
     if out1 > 0:
         label(lay, (W / 2, 200), "KALAU SETAHUN?", prog(lt, 0.1, 0.4) * out1)
         slam(lay, (W / 2, 330), "48 ROUND SETAHUN", 92, WHITE, prog(lt, 0.8, 0.3) * out1)
@@ -880,19 +880,19 @@ def scene_ending(t, lt, dur):
 
 def scene_ending_montage(t, lt):
     """Bahagian akhir: montaj klip animasi + mesej harga ikut kelab + CTA."""
-    q = lt - 7.3
+    q = lt - 6.6
     frame = montage(q)
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(lay)
     darken(lay, 1100, 500, 1.0)
-    out1 = 1 - prog(q, 2.4, 0.25)
+    out1 = 1 - prog(q, 4.2, 0.25)
     if out1 > 0:
         panel(lay, (70, 300, 1010, 760), prog(q, 0.0, 0.25) * out1, alpha=0.62, border=GOLD)
         slam(lay, (W / 2, 390), "HARGA MEMBERSHIP", 92, GOLD, prog(q, 0.05, 0.3) * out1)
         slam(lay, (W / 2, 520), "BERGANTUNG KEPADA KELAB", 66, WHITE, prog(q, 0.35, 0.3) * out1)
         slam(lay, (W / 2, 630), "DI KAWASAN MASING-MASING", 66, WHITE, prog(q, 0.6, 0.3) * out1)
-    if q > 2.5:
-        r = q - 2.5
+    if q > 4.3:
+        r = q - 4.3
         slam(lay, (W / 2, 330), "KORANG", 110, WHITE, prog(r, 0.0, 0.25))
         slam(lay, (W / 2, 460), "MEMBER", 120, GREEN, prog(r, 0.2, 0.25))
         slam(lay, (W / 2, 570), "ATAU", 70, WHITE, prog(r, 0.4, 0.25))
@@ -1056,10 +1056,10 @@ def make_audio(path):
     tick_run(50.4, 0.8)
     tick_run(51.5, 0.8)
     impact(48 + 4.8, 0.55)
-    impact(55.3, 0.4)
-    impact(57.8, 0.5)
-    for k in range(1, 4):
-        whoosh(55.3 + k * 1.2 - 0.1, 0.25, 0.15)
+    impact(54.6, 0.4)
+    impact(58.9, 0.5)
+    for k in range(1, 6):
+        whoosh(54.6 + k * 1.2 - 0.1, 0.25, 0.15)
 
     vo = np.zeros(n)
     have_vo = False
