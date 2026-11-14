@@ -584,7 +584,7 @@ def make_audio(path):
     T = SCENE_T0
     for at in (T["bola"] + 2.8, T["sewa"] + 1.4, T["pinjam"] + 0.5, T["pinjam"] + 2.0,
                T["kira4"] + 2.6, T["kira4"] + 3.8, T["kira4"] + 5.8,
-               T["kira8"] + 2.6, T["kira8"] + 3.8, T["kira8"] + 5.8, T["akhir"] + 2.5, T["ayala"] + 0.4, T["ayala"] + 1.2):
+               T["kira8"] + 2.6, T["kira8"] + 3.8, T["kira8"] + 5.8, T["akhir"] + 2.5):
         sfx_ding(at)
 
     # fade
@@ -600,6 +600,13 @@ def make_audio(path):
             s0 = int(at * SR)
             m = min(len(v), n - s0)
             out[s0:s0 + m] += v[:m] * 1.1
+    # "TING!" jelas untuk ajakan follow di babak penutup (atas semua bunyi lain)
+    at = int((T["ayala"] + 1.0) * SR)
+    m = min(int(1.6 * SR), n - at)
+    tt = np.arange(m) / SR
+    ting = sum(a * np.sin(2 * np.pi * f * tt) * np.exp(-tt * dk)
+               for f, a, dk in ((1568, 1.0, 3.0), (3136, 0.45, 5.0), (4704, 0.2, 8.0), (2349, 0.3, 4.0)))
+    out[at:at + m] += 0.45 * ting * np.minimum(1, tt * 400)
     out /= max(1e-9, np.abs(out).max()) / 0.9
     pcm = (out * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
