@@ -747,8 +747,107 @@ def down_arrow(d, cx, cy, s, a, col=GOLD):
     d.polygon([(cx - 45 * s, cy), (cx + 45 * s, cy), (cx, cy + 50 * s)], fill=rgba(col, a))
 
 
+# ---------------------------------------------------------------- montaj klip animasi (ending)
+CLIP_LEN = 1.2
+
+
+def clip_swing(lc):
+    Z = dict(zoom0=1.25, zoom1=1.35, pan=(-120, 260))
+    fr = camera("sunset", lc, CLIP_LEN, **Z).convert("RGBA")
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    gx, gy = W * 0.38, H * 0.86
+    pose = "address" if lc < 0.35 else ("back" if lc < 0.6 else "follow")
+    rim = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    golfer(ImageDraw.Draw(rim), gx - 6, gy - 5, 900, pose, (255, 170, 90, 255))
+    lay.alpha_composite(rim.filter(ImageFilter.GaussianBlur(4)))
+    golfer(d, gx, gy, 900, pose, (14, 12, 18))
+    if lc >= 0.6:
+        q = (lc - 0.6) / 0.6
+        for k in range(8, -1, -1):
+            qq = max(0.0, q - k * 0.03)
+            bx = gx + 300 + qq * 700
+            by = gy - 30 - math.sin(min(1, qq) * math.pi * 0.7) * 1100 - qq * 200
+            golf_ball(d, bx, by, 28 * (1 - 0.6 * qq), 1 - k * 0.1)
+    else:
+        golf_ball(d, gx + 300, gy - 30, 28)
+    fr.alpha_composite(lay)
+    return fr
+
+
+def clip_buggy(lc):
+    fr = camera("evening", lc, CLIP_LEN, 1.15, 1.2, (0, 300)).convert("RGBA")
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    x = -500 + (W + 1000) * ease_io(lc / CLIP_LEN)
+    y = H * 0.82 - abs(math.sin(lc * 18)) * 8
+    for k in range(6):
+        ly = y - 60 - k * 55
+        d.line((x - 520 - k * 30, ly, x - 380, ly), fill=(255, 220, 170, 120), width=6)
+    buggy(d, x, y, 2.4, (18, 18, 24), roof_col=(30, 120, 70), wheel_rot=-lc * 30)
+    fr.alpha_composite(lay)
+    return fr
+
+
+def clip_putt(lc):
+    fr = Image.new("RGBA", (W, H), (0, 0, 0, 255))
+    d = ImageDraw.Draw(fr)
+    for y in range(H):
+        k = y / H
+        d.line((0, y, W, y), fill=lerp((60, 40, 50), (240, 150, 80), min(1, k * 2.2)) if k < 0.45
+               else lerp((70, 150, 70), (40, 110, 50), (k - 0.45) / 0.55))
+    for i in range(0, H, 40):
+        if i > H * 0.45:
+            d.line((0, i, W, i), fill=(80, 165, 80), width=3)
+    hx, hy = W * 0.62, H * 0.72
+    d.ellipse((hx - 120, hy - 40, hx + 120, hy + 40), fill=(15, 25, 15))
+    d.rectangle((hx - 6, hy - 470, hx + 6, hy), fill=(240, 240, 240))
+    wv = math.sin(lc * 8)
+    d.polygon([(hx + 6, hy - 470), (hx + 230, hy - 420 + wv * 18), (hx + 6, hy - 360)], fill=(220, 50, 50))
+    q = clamp(lc / 0.85)
+    bx = -60 + (hx + 60) * ease_out(q)
+    by = hy - 10 - 20 * (1 - q)
+    if q < 1:
+        golf_ball(d, bx, by, 45)
+    else:
+        drop = clamp((lc - 0.85) / 0.2)
+        if drop < 1:
+            golf_ball(d, hx, hy - 10 + drop * 40, 45 * (1 - drop * 0.7))
+    return fr
+
+
+def clip_teeball(lc):
+    fr = camera("sunset", lc, CLIP_LEN, 1.5, 1.6, (0, 380)).convert("RGBA")
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    s = 1 + 0.15 * ease_io(lc / CLIP_LEN)
+    cx, cy, r = W / 2, H * 0.62, 260 * s
+    d.polygon([(cx - 60 * s, cy + r * 0.9), (cx + 60 * s, cy + r * 0.9), (cx + 25 * s, cy + r * 2.2),
+               (cx - 25 * s, cy + r * 2.2)], fill=(235, 235, 235))
+    golf_ball(d, cx, cy, r)
+    for k in range(14):
+        gx2 = (k * 83) % W
+        d.line((gx2, H, gx2 + 20, H - 140 - (k % 3) * 40), fill=(30, 70, 35), width=10)
+    fr.alpha_composite(lay)
+    return fr
+
+
+CLIPS = [clip_swing, clip_buggy, clip_putt, clip_teeball]
+
+
+def montage(mt):
+    i = int(mt // CLIP_LEN) % len(CLIPS)
+    lc = mt % CLIP_LEN
+    fr = CLIPS[i](lc)
+    if mt > 0.05 and lc < 0.1:
+        fr = Image.blend(fr, Image.new("RGBA", (W, H), (255, 250, 240, 255)), 0.45 * (1 - lc / 0.1))
+    return fr
+
+
 def scene_ending(t, lt, dur):
     Z = dict(zoom0=1.0, zoom1=1.18, pan=(0, -60))
+    if lt > 7.3:
+        return scene_ending_montage(t, lt)
     frame = camera("sunset", lt, dur, **Z).convert("RGBA")
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(lay)
@@ -775,24 +874,39 @@ def scene_ending(t, lt, dur):
         slide(lay, (930, 630), "±" + money(count_up(lt, 3.5, 0.8, 5232)), 64, WHITE, prog(lt, 3.5, 0.3) * out1, anchor="rm", dx=120)
         underline(lay, 150, 930, 700, prog(lt, 4.4, 0.4) * out1, col=GOLD, w=6)
         slam(lay, (W / 2, 790), "BEZA ±RM2,496", 100, GOLD, prog(lt, 4.8, 0.35) * out1)
-    if lt > 7.3:
-        q = lt - 7.3
-        slam(lay, (W / 2, 330), "KORANG", 110, WHITE, prog(q, 0.0, 0.3))
-        slam(lay, (W / 2, 460), "MEMBER", 120, GREEN, prog(q, 0.3, 0.3))
-        slam(lay, (W / 2, 570), "ATAU", 70, WHITE, prog(q, 0.55, 0.3))
-        slam(lay, (W / 2, 690), "NON-MEMBER?", 120, RED, prog(q, 0.8, 0.3))
-        p = prog(q, 1.3, 0.35)
+    frame.alpha_composite(whip_in(lay, lt))
+    return frame
+
+
+def scene_ending_montage(t, lt):
+    """Bahagian akhir: montaj klip animasi + mesej harga ikut kelab + CTA."""
+    q = lt - 7.3
+    frame = montage(q)
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    darken(lay, 1100, 500, 1.0)
+    out1 = 1 - prog(q, 2.4, 0.25)
+    if out1 > 0:
+        panel(lay, (70, 300, 1010, 760), prog(q, 0.0, 0.25) * out1, alpha=0.62, border=GOLD)
+        slam(lay, (W / 2, 390), "HARGA MEMBERSHIP", 92, GOLD, prog(q, 0.05, 0.3) * out1)
+        slam(lay, (W / 2, 520), "BERGANTUNG KEPADA KELAB", 66, WHITE, prog(q, 0.35, 0.3) * out1)
+        slam(lay, (W / 2, 630), "DI KAWASAN MASING-MASING", 66, WHITE, prog(q, 0.6, 0.3) * out1)
+    if q > 2.5:
+        r = q - 2.5
+        slam(lay, (W / 2, 330), "KORANG", 110, WHITE, prog(r, 0.0, 0.25))
+        slam(lay, (W / 2, 460), "MEMBER", 120, GREEN, prog(r, 0.2, 0.25))
+        slam(lay, (W / 2, 570), "ATAU", 70, WHITE, prog(r, 0.4, 0.25))
+        slam(lay, (W / 2, 690), "NON-MEMBER?", 120, RED, prog(r, 0.6, 0.25))
+        p = prog(r, 1.0, 0.3)
         if p > 0:
             panel(lay, (260, 790, 820, 900), p, col=GOLD, alpha=0.96, radius=55)
             slam(lay, (W / 2, 845), "COMMENT", 70, INK, p, shadow=False)
             down_arrow(d, W / 2, 970 + abs(math.sin(lt * 5)) * 22, 1.0, p)
-    # nota kecil
-    a = prog(lt, 7.6, 0.5)
+    a = prog(q, 0.3, 0.4)
     if a > 0:
-        f = fnt(F_MED, 32)
-        d.text((W / 2, H - 150), "*Anggaran berdasarkan 4 kali bermain sebulan.", font=f, fill=rgba((230, 230, 230), a * 0.9), anchor="mm")
-        d.text((W / 2, H - 105), "Harga sebenar tertakluk kepada kadar semasa kelab.", font=f, fill=rgba((230, 230, 230), a * 0.9), anchor="mm")
-    frame.alpha_composite(whip_in(lay, lt))
+        d.text((W / 2, H - 120), "*Anggaran berdasarkan 4 kali bermain sebulan.", font=fnt(F_MED, 32),
+               fill=rgba((230, 230, 230), a * 0.9), anchor="mm")
+    frame.alpha_composite(lay)
     return frame
 
 
@@ -943,7 +1057,9 @@ def make_audio(path):
     tick_run(51.5, 0.8)
     impact(48 + 4.8, 0.55)
     impact(55.3, 0.4)
-    impact(56.1, 0.5)
+    impact(57.8, 0.5)
+    for k in range(1, 4):
+        whoosh(55.3 + k * 1.2 - 0.1, 0.25, 0.15)
 
     vo = np.zeros(n)
     have_vo = False
