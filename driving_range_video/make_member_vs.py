@@ -87,13 +87,13 @@ SCENES = [
 
 # (fail, masa mula) - voiceover diletak pada masa tetap ikut skrip
 VO_CUES = [
-    ("1_hook.mp3", 0.4),
-    ("2a_member.mp3", 5.3),
-    ("2b_buggy_am.mp3", 9.6),
+    ("1_hook.mp3", 0.3),
+    ("2a_member.mp3", 6.0),
+    ("2b_buggy_am.mp3", 12.3),
     ("3_member_pm.mp3", 18.3),
     ("4_non.mp3", 25.3),
-    ("5a_reveal.mp3", 35.8),
-    ("5b_non.mp3", 41.4),
+    ("5a_reveal.mp3", 35.6),
+    ("5b_non.mp3", 43.0),
     ("6a_setahun.mp3", 48.4),
     ("6b_akhir.mp3", 52.6),
 ]
@@ -578,7 +578,7 @@ def scene_member(t, lt, dur):
     label(lay, (W / 2, 200), "CONTOH: KGRP, TERENGGANU", prog(lt, 0.2, 0.4))
 
     # bahagian 1: kad keahlian + RM140/bulan (0 - 4.5)
-    p1_out = 1 - prog(lt, 4.3, 0.3)
+    p1_out = 1 - prog(lt, 6.8, 0.3)
     if p1_out > 0:
         membership_card(lay, W / 2 + (1 - p1_out) * -W, 640, 760, prog(lt, 0.3, 0.6), -6 + math.sin(lt * 1.5) * 2, t)
         v = count_up(t, 5.0 + 1.4, 1.0, 140)
@@ -587,9 +587,9 @@ def scene_member(t, lt, dur):
         slide(lay, (W / 2 + (1 - p1_out) * -W, 1340), "/ BULAN", 64, WHITE, prog(lt, 2.0, 0.4), dx=120)
 
     # bahagian 2: buggy pagi RM22 x 4 (4.5 - 9)
-    if 4.4 < lt:
-        q = lt - 4.5
-        out2 = 1 - prog(lt, 8.8, 0.3)
+    if 6.9 < lt:
+        q = lt - 7.0
+        out2 = 1 - prog(lt, 10.3, 0.3)
         ox = (1 - ease_out(prog(q, 0, 0.4))) * W + (1 - out2) * -W
         if out2 > 0:
             # buggy kecil bergerak merentasi
@@ -601,18 +601,18 @@ def scene_member(t, lt, dur):
             # persamaan
             equation(lay, W / 2 + ox, 1180, [("RM22", WHITE, prog(q, 1.4, 0.3)), ("×", GOLD, prog(q, 1.8, 0.3)),
                                              ("4", GOLD, prog(q, 1.8, 0.3)), ("=", WHITE, prog(q, 2.3, 0.3)),
-                                             (money(count_up(lt, 7.0, 0.7, 88)), GREEN, prog(q, 2.5, 0.3))], 112)
+                                             (money(count_up(lt, 9.5, 0.7, 88)), GREEN, prog(q, 2.5, 0.3))], 112)
             slide(lay, (W / 2 + ox, 1300), "4 ROUND SEBULAN", 44, (210, 210, 210), prog(q, 2.0, 0.3))
 
     # bahagian 3: jumlah RM228 (9 - 13)
-    if lt > 8.9:
-        q = lt - 9.0
+    if lt > 10.3:
+        q = lt - 10.4
         panel(lay, (90, 560, 990, 1420), prog(q, 0, 0.3), border=GREEN, alpha=0.55)
         label(lay, (W / 2, 640), "MEMBER · PAGI", prog(q, 0.1, 0.3), col=GREEN)
         equation(lay, W / 2, 820, [("RM140", WHITE, prog(q, 0.3, 0.3)), ("+", GOLD, prog(q, 0.6, 0.3)),
                                    ("RM88", WHITE, prog(q, 0.8, 0.3))], 116)
         underline(lay, 180, 900, 920, prog(q, 1.2, 0.4), col=GREEN)
-        slam(lay, (W / 2, 1110), money(count_up(lt, 10.4, 0.8, 228)), 230, GREEN, prog(q, 1.4, 0.35))
+        slam(lay, (W / 2, 1110), money(count_up(lt, 11.8, 0.8, 228)), 230, GREEN, prog(q, 1.4, 0.35))
         slam(lay, (W / 2, 1290), "/ BULAN", 70, WHITE, prog(q, 1.8, 0.3))
     frame.alpha_composite(whip_in(lay, lt))
     return frame
@@ -716,7 +716,7 @@ def scene_reveal(t, lt, dur):
     frame = Image.blend(frame, bg, 0.28)
     label(lay, (W / 2, 190), "4 ROUND SEBULAN", prog(lt, 0.1, 0.4), col=GOLD)
     slam(lay, (W / 2, 300), "SIAPA MENANG?", 92, WHITE, prog(lt, 0.3, 0.3))
-    bars = [("MEMBER", "PAGI", 228, GREEN, 0.9), ("MEMBER", "PETANG", 252, TEAL, 2.0), ("NON-", "MEMBER", 436, RED, 5.6)]
+    bars = [("MEMBER", "PAGI", 228, GREEN, 0.9), ("MEMBER", "PETANG", 252, TEAL, 2.0), ("NON-", "MEMBER", 436, RED, 8.0)]
     base_y, top_y = 1350, 560
     maxv = 460
     for i, (l1, l2, v, col, st) in enumerate(bars):
@@ -731,7 +731,7 @@ def scene_reveal(t, lt, dur):
         d.text((x, base_y + 105), l2, font=fnt(F_XB, 42), fill=rgba(col), anchor="mm")
     d.line((80, base_y, W - 80, base_y), fill=rgba((200, 200, 200), prog(lt, 0.6, 0.3)), width=4)
     # jimat
-    p = prog(lt, 8.0, 0.4)
+    p = prog(lt, 9.8, 0.4)
     if p > 0:
         # anak panah perbandingan
         panel(lay, (90, 1530, 990, 1780), p, col=GOLD, alpha=0.96, radius=30)
@@ -916,11 +916,11 @@ def make_audio(path):
     # member
     impact(5 + 1.4, 0.4)
     tick_run(5 + 1.4, 1.0)
-    impact(5 + 4.5 + 2.5, 0.35)
-    tick_run(7.0, 0.7)
-    riser(12.4, 1.0)
-    impact(5 + 9 + 1.4, 0.55)
-    tick_run(10.4 + 5 - 5, 0.8)
+    impact(5 + 7.0 + 2.5, 0.35)
+    tick_run(14.5, 0.7)
+    riser(14.8, 1.0)
+    impact(5 + 10.4 + 1.4, 0.55)
+    tick_run(16.8, 0.8)
     # pm
     swing(18 + 3.0)
     impact(18 + 2.2, 0.35)
@@ -932,11 +932,11 @@ def make_audio(path):
     impact(25 + 6.0, 0.7)
     tick_run(31.0, 0.9)
     # reveal
-    for st in (0.9, 2.0, 5.6):
+    for st in (0.9, 2.0, 8.0):
         whoosh(35 + st, 0.6, 0.12)
-    impact(35 + 6.5, 0.5)
-    riser(41.6, 1.4, 0.14)
-    impact(43.0, 0.8)
+    impact(35 + 8.9, 0.5)
+    riser(43.4, 1.4, 0.14)
+    impact(44.8, 0.8)
     # ending
     impact(48 + 0.8, 0.35)
     tick_run(50.4, 0.8)
