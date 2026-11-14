@@ -56,6 +56,7 @@ SCENE_DEFS = [
     ("kira4", 10.0, "5_kira4.mp3"),
     ("kira8", 7.5, "6_kira8.mp3"),
     ("akhir", 5.0, "7_akhir.mp3"),
+    ("ayala", 5.0, "8_ayala.mp3"),
 ]
 
 
@@ -436,6 +437,37 @@ def scene_akhir(layer, t, t0, t1):
         golf_ball(d, bx, by, 32)
 
 
+_LOGO = None
+
+
+def scene_ayala(layer, t, t0, t1):
+    """Babak penutup: logo Team Ayala + ajakan follow."""
+    global _LOGO
+    if _LOGO is None:
+        _LOGO = Image.open(os.path.join(HERE, "logo_ayala.png")).convert("RGBA")
+    d = ImageDraw.Draw(layer)
+    lt = t - t0
+    # latar gelap menutup padang
+    d.rectangle((0, 0, W, H), fill=(15, 30, 22, int(235 * prog(lt, 0, 0.4))))
+    # kad putih dengan logo (pop masuk)
+    p = prog(lt, 0.2, 0.6)
+    if p > 0:
+        s = max(0.05, ease_back(p))
+        cw, ch = int(820 * s), int(740 * s)
+        cx, cy = W // 2, 760
+        card(d, (cx - cw // 2, cy - ch // 2, cx + cw // 2, cy + ch // 2), clamp(p * 3), radius=int(60 * s))
+        lw = int(720 * s)
+        lh = int(lw * _LOGO.height / _LOGO.width)
+        logo = _LOGO.resize((max(1, lw), max(1, lh)), Image.LANCZOS)
+        if p < 0.34:
+            logo.putalpha(logo.getchannel("A").point(lambda v: int(v * p * 3)))
+        layer.alpha_composite(logo, (cx - lw // 2, cy - lh // 2))
+    # teks follow, berdenyut sedikit
+    pulse = 1 + 0.04 * math.sin(max(0, lt - 1.6) * 6)
+    pop_text(layer, (W // 2, 1300), "FOLLOW", int(120 * pulse), WHITE, prog(lt, 0.9, 0.5), stroke=8)
+    pop_text(layer, (W // 2, 1450), "TEAM AYALA", int(130 * pulse), YELLOW, prog(lt, 1.2, 0.5), stroke=8)
+
+
 def render_frame(bg, t):
     frame = bg.copy().convert("RGBA")
     cl = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -461,8 +493,10 @@ def render_frame(bg, t):
                        "Main 2 kali seminggu = 8 sesi")
         elif name == "akhir":
             scene_akhir(layer, t, t0, t1)
+        elif name == "ayala":
+            scene_ayala(layer, t, t0, t1)
         # fade keluar di hujung babak (kecuali babak terakhir)
-        if name != "akhir" and t > t1 - 0.01:
+        if name != SCENES[-1][0] and t > t1 - 0.01:
             fade = 1 - prog(t, t1, 0.4)
             alpha = layer.getchannel("A").point(lambda v: int(v * fade))
             layer.putalpha(alpha)
@@ -550,7 +584,7 @@ def make_audio(path):
     T = SCENE_T0
     for at in (T["bola"] + 2.8, T["sewa"] + 1.4, T["pinjam"] + 0.5, T["pinjam"] + 2.0,
                T["kira4"] + 2.6, T["kira4"] + 3.8, T["kira4"] + 5.8,
-               T["kira8"] + 2.6, T["kira8"] + 3.8, T["kira8"] + 5.8, T["akhir"] + 2.5):
+               T["kira8"] + 2.6, T["kira8"] + 3.8, T["kira8"] + 5.8, T["akhir"] + 2.5, T["ayala"] + 0.4, T["ayala"] + 1.2):
         sfx_ding(at)
 
     # fade
