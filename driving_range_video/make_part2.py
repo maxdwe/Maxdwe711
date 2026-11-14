@@ -195,9 +195,11 @@ def scene_amik(layer, t, t0, t1):
     # kaunter
     if lt > STEAL_START:
         pop_text(layer, (W // 2, 520), f"{taken} biji", 90, ORANGE, prog(lt, STEAL_START, 0.3), stroke=0)
-    a2 = prog(lt, STEAL_START + 10 * STEAL_GAP + 0.3, 0.5)
-    card(d, (120, 1560, 960, 1700), a2, fill=DARK, radius=60)
-    draw_text(d, (W // 2, 1630), "Shhh... dia takkan perasan", font(48), WHITE, a2)
+    a2 = prog(lt, 0.8, 0.5)
+    card(d, (70, 1530, 1010, 1790), a2, fill=DARK, radius=60)
+    draw_text(d, (W // 2, 1610), 'Cakap kat kawan: "Nak try je!"', font(48), WHITE, a2)
+    a3 = prog(lt, STEAL_START + 10 * STEAL_GAP, 0.5)
+    draw_text(d, (W // 2, 1710), "Jangan lupa senyum & terima kasih!", font(39), YELLOW, a3)
 
 
 def scene_jimat(layer, t, t0, t1):
