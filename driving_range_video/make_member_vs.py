@@ -481,7 +481,7 @@ def finish(frame, t):
         if -0.12 < dt < 0.22:
             a = (1 - abs(dt) / 0.22) * 0.75 if dt >= 0 else (1 + dt / 0.12) * 0.4
             frame = Image.blend(frame, Image.new("RGBA", (W, H), (255, 250, 240, 255)), clamp(a))
-    k = min(prog(t, 0, 0.3), 1 - prog(t, DURATION - 0.6, 0.6))
+    k = prog(t, 0, 0.3)  # fade masuk sahaja; babak akhir kekal tanpa fade keluar
     if k < 1:
         frame = Image.blend(Image.new("RGBA", (W, H), (0, 0, 0, 255)), frame, k)
     return frame.convert("RGB")
