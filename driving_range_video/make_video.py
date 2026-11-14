@@ -45,15 +45,39 @@ GREY = (110, 120, 115)
 BLUE = (40, 120, 200)
 
 # ---------------------------------------------------------------- masa babak
-SCENES = [
-    ("intro", 0.0, 5.0),
-    ("bola", 5.0, 11.5),
-    ("sewa", 11.5, 17.5),
-    ("pinjam", 17.5, 24.5),
-    ("kira4", 24.5, 34.5),
-    ("kira8", 34.5, 42.0),
-    ("akhir", 42.0, 47.0),
+# (nama, tempoh asal, fail voiceover). Tempoh dipanjangkan ikut panjang suara.
+VO_DIR = os.path.join(HERE, "voiceover")
+VO_START = 0.3  # suara mula 0.3s selepas babak bermula
+SCENE_DEFS = [
+    ("intro", 5.0, "1_intro.mp3"),
+    ("bola", 6.5, "2_bola.mp3"),
+    ("sewa", 6.0, "3_sewa.mp3"),
+    ("pinjam", 7.0, "4_pinjam.mp3"),
+    ("kira4", 10.0, "5_kira4.mp3"),
+    ("kira8", 7.5, "6_kira8.mp3"),
+    ("akhir", 5.0, "7_akhir.mp3"),
 ]
+
+
+def _vo_len(fn):
+    path = os.path.join(VO_DIR, fn)
+    if not os.path.exists(path):
+        return 0.0
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                        "-of", "csv=p=0", path], capture_output=True, text=True)
+    return float(r.stdout.strip() or 0)
+
+
+SCENES, VO_CLIPS = [], []
+_t = 0.0
+for _name, _dur, _fn in SCENE_DEFS:
+    _vl = _vo_len(_fn)
+    _d = max(_dur, VO_START + _vl + 0.8) if _vl else _dur
+    SCENES.append((_name, round(_t, 3), round(_t + _d, 3)))
+    if _vl:
+        VO_CLIPS.append((os.path.join(VO_DIR, _fn), _t + VO_START))
+    _t += _d
+SCENE_T0 = {n: a for n, a, _ in SCENES}
 DURATION = SCENES[-1][2]
 
 
@@ -523,14 +547,26 @@ def make_audio(path):
     sfx_hit(0.25)
     for _, t0, _ in SCENES[1:]:
         sfx_whoosh(t0)
-    for at in (5.0 + 2.8, 11.5 + 1.4, 17.5 + 0.5, 17.5 + 2.0,
-               24.5 + 2.6, 24.5 + 3.8, 24.5 + 5.8, 34.5 + 2.6, 34.5 + 3.8, 34.5 + 5.8, 42.0 + 2.5):
+    T = SCENE_T0
+    for at in (T["bola"] + 2.8, T["sewa"] + 1.4, T["pinjam"] + 0.5, T["pinjam"] + 2.0,
+               T["kira4"] + 2.6, T["kira4"] + 3.8, T["kira4"] + 5.8,
+               T["kira8"] + 2.6, T["kira8"] + 3.8, T["kira8"] + 5.8, T["akhir"] + 2.5):
         sfx_ding(at)
 
     # fade
     fade = int(1.0 * SR)
     out[-fade:] *= np.linspace(1, 0, fade)
-    out /= max(1e-9, np.abs(out).max()) / 0.85
+    out /= max(1e-9, np.abs(out).max())
+    if VO_CLIPS:
+        out *= 0.28  # muzik & efek jadi latar bila ada suara
+        for vo_path, at in VO_CLIPS:
+            raw = subprocess.run(["ffmpeg", "-v", "error", "-i", vo_path, "-f", "s16le", "-ac", "1",
+                                  "-ar", str(SR), "-"], capture_output=True).stdout
+            v = np.frombuffer(raw, dtype=np.int16).astype(np.float64) / 32768
+            s0 = int(at * SR)
+            m = min(len(v), n - s0)
+            out[s0:s0 + m] += v[:m] * 1.1
+    out /= max(1e-9, np.abs(out).max()) / 0.9
     pcm = (out * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
         w.setnchannels(1)
