@@ -220,8 +220,8 @@ def camera(mode, lt, dur, zoom0=1.0, zoom1=1.12, pan=(0, 0)):
     k = ease_io(clamp(lt / dur))
     z = zoom0 + (zoom1 - zoom0) * k
     cw, ch = BW / z, BH / z
-    cx = BW / 2 + pan[0] * k
-    cy = BH / 2 + pan[1] * k
+    cx = min(max(BW / 2 + pan[0] * k, cw / 2), BW - cw / 2)
+    cy = min(max(BH / 2 + pan[1] * k, ch / 2), BH - ch / 2)
     box = (cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2)
     return bg.resize((W, H), Image.BILINEAR, box=box)
 
