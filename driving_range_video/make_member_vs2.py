@@ -275,7 +275,7 @@ def scene_setahun(t, lt, dur):
     for k in range(8):
         r, c = divmod(k, 4)
         gold_bar(lay, 165 + c * 250, 1010 + r * 230, 1.0, prog(lt, 2.6 + k * 0.25, 0.4), t, k)
-    slam(lay, (W / 2, 1520), "8 × 1g = 8 GRAM", 72, GOLD, prog(lt, 2.6 + 8 * 0.25 + 0.2, 0.3))
+    slam(lay, (W / 2, 1520), "RM5,232 ÷ RM650 = 8 GRAM", 62, GOLD, prog(lt, 2.6 + 8 * 0.25 + 0.2, 0.3))
     fr.alpha_composite(whip_in(lay, lt))
     return fr
 
