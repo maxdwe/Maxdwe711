@@ -96,6 +96,55 @@ def sofa_guy(d, cx, cy, s, t, a=1.0):
                fill=rgba(WHITE, a * (1 - q)), anchor="mm")
 
 
+def gold_bar(lay, cx, cy, s, p, t, k):
+    """Jongkong emas 1g bersinar (pop masuk dengan p)."""
+    if p <= 0:
+        return
+    sc = s * max(0.05, ease_back(p))
+    w, h, dep = 190 * sc, 95 * sc, 40 * sc
+    im = Image.new("RGBA", (int(w + 140 * sc) + 4, int(h + dep + 140 * sc) + 4), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    ox, oy = 70 * sc, 70 * sc
+    a = clamp(p * 3)
+    # muka atas (trapezium)
+    top = [(ox + 25 * sc, oy), (ox + w - 25 * sc, oy), (ox + w, oy + dep), (ox, oy + dep)]
+    d.polygon(top, fill=rgba((255, 226, 120), a))
+    # muka depan
+    d.polygon([(ox, oy + dep), (ox + w, oy + dep), (ox + w - 12 * sc, oy + dep + h), (ox + 12 * sc, oy + dep + h)],
+              fill=rgba((232, 176, 40), a))
+    d.line((ox, oy + dep, ox + w, oy + dep), fill=rgba((255, 245, 200), a), width=max(1, int(3 * sc)))
+    d.text((ox + w / 2, oy + dep + h * 0.38), "GOLD", font=fnt(F_BLACK, int(30 * sc)), fill=rgba((150, 100, 10), a), anchor="mm")
+    d.text((ox + w / 2, oy + dep + h * 0.72), "999.9 · 1g", font=fnt(F_MONO, int(18 * sc)), fill=rgba((150, 100, 10), a), anchor="mm")
+    # kilauan menyapu
+    q = ((t * 0.7 + k * 0.13) % 1.6) - 0.3
+    sx = ox + q * w
+    shine = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shine).polygon([(sx, oy), (sx + 30 * sc, oy), (sx - 10 * sc, oy + dep + h), (sx - 40 * sc, oy + dep + h)],
+                                  fill=(255, 255, 255, int(150 * a)))
+    mask = Image.new("L", im.size, 0)
+    md = ImageDraw.Draw(mask)
+    md.polygon(top, fill=255)
+    md.polygon([(ox, oy + dep), (ox + w, oy + dep), (ox + w - 12 * sc, oy + dep + h), (ox + 12 * sc, oy + dep + h)], fill=255)
+    im.alpha_composite(Image.composite(shine, Image.new("RGBA", im.size, (0, 0, 0, 0)), mask))
+    # cahaya lembut di belakang
+    glow = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse((ox - 20 * sc, oy - 20 * sc, ox + w + 20 * sc, oy + dep + h + 20 * sc), fill=(255, 210, 90, int(80 * a)))
+    glow = glow.filter(ImageFilter.GaussianBlur(int(18 * sc) + 1))
+    glow.alpha_composite(im)
+    lay.alpha_composite(glow, (int(cx - glow.width / 2), int(cy - glow.height / 2)))
+    # bintang berkelip
+    dl = ImageDraw.Draw(lay)
+    tw = 0.5 + 0.5 * math.sin(t * 6 + k * 1.7)
+    r = (10 + 14 * tw) * sc
+    stx, sty = cx + w * 0.42, cy - h * 0.55
+    pts = []
+    for j in range(8):
+        ang = j * math.pi / 4
+        rr = r if j % 2 == 0 else r * 0.25
+        pts.append((stx + rr * math.cos(ang), sty + rr * math.sin(ang)))
+    dl.polygon(pts, fill=rgba(WHITE, a * (0.4 + 0.6 * tw)))
+
+
 def teh_tarik(d, cx, cy, s, a=1.0):
     d.polygon([(cx - 40 * s, cy - 90 * s), (cx + 40 * s, cy - 90 * s), (cx + 30 * s, cy + 50 * s), (cx - 30 * s, cy + 50 * s)],
               fill=rgba((235, 235, 240), a * 0.5), outline=rgba(WHITE, a))
@@ -222,11 +271,11 @@ def scene_setahun(t, lt, dur):
     slam(lay, (W / 2, 620), "SETAHUN", 70, WHITE, prog(lt, 1.3, 0.3))
     a = prog(lt, 2.2, 0.4)
     if a > 0:
-        d.text((W / 2, 760), "Boleh minum teh tarik hari-hari!", font=fnt(F_BOLD, 52), fill=rgba(WHITE, a), anchor="mm")
-    n = int(clamp((lt - 2.6) / 2.4) * 15)
-    for k in range(n):
-        r, c = divmod(k, 5)
-        teh_tarik(d, 220 + c * 160, 1000 + r * 190, 0.95)
+        d.text((W / 2, 760), "Boleh beli 8 gram gold bar setahun!", font=fnt(F_BOLD, 54), fill=rgba(GOLD, a), anchor="mm")
+    for k in range(8):
+        r, c = divmod(k, 4)
+        gold_bar(lay, 165 + c * 250, 1010 + r * 230, 1.0, prog(lt, 2.6 + k * 0.25, 0.4), t, k)
+    slam(lay, (W / 2, 1520), "8 × 1g = 8 GRAM", 72, GOLD, prog(lt, 2.6 + 8 * 0.25 + 0.2, 0.3))
     fr.alpha_composite(whip_in(lay, lt))
     return fr
 
