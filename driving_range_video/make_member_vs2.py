@@ -418,8 +418,8 @@ def make_audio(path):
     impact(e0 + 3.9, 0.5)
 
     vo = np.zeros(n)
-    for path, at, _ in VO_CLIPS:
-        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"],
+    for vo_path, at, _ in VO_CLIPS:
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", vo_path, "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"],
                              capture_output=True).stdout
         v = np.frombuffer(raw, dtype=np.int16).astype(np.float64) / 32768
         s0_ = int(at * SR)
