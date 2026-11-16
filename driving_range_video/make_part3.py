@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Video animasi Part 3: Kos masuk padang - 5 barang perlu siap sebelum masuk.
+"""Video animasi Part 3: Persiapan masuk padang - 5 barang perlu siap sebelum masuk.
 
 Gaya "explainer kad": latar kertas krim dengan sinar & titik halftone, label mono di atas,
 tajuk hitam dengan perkataan penting merah italik serif, kad-kad senget yang dibuka satu
@@ -72,8 +72,8 @@ def rgba(col, a=1.0):
 # nama, tempoh asal, fail suara, label kiri, label kanan, tajuk (*merah italik*),
 # teks pil, teks sepanduk, nota kecil
 SCENE_DEFS = [
-    ("intro", 5.0, "1_intro.mp3", "// 03 · kos masuk padang", "PART 3",
-     "Nak masuk *padang?* Siapkan *lima* benda ni dulu.", "part 3", "KOS MASUK PADANG", ""),
+    ("intro", 5.0, "1_intro.mp3", "// 03 · persiapan masuk padang", "PART 3",
+     "Nak masuk *padang?* Siapkan *lima* benda ni dulu.", "part 3", "PERSIAPAN MASUK PADANG", ""),
     ("set", 7.5, "2_set.mp3", "// 03 · lima barang", "BARANG 1/5",
      "Pertama, *set golf.* Second hand dari *RM1,000* ke atas.", "PERTAMA", "RM1,000++",
      "Kawan nak let go? Boleh dapat lagi murah!"),
@@ -221,8 +221,13 @@ def banner(layer, cy, txt, p, col=RED):
     """Sepanduk merah senget yang meluncur masuk dari kiri."""
     if p <= 0 or not txt:
         return
-    fb = fnt(F_XBOLD, 84)
+    size = 84
+    fb = fnt(F_XBOLD, size)
     tw = int(ImageDraw.Draw(layer).textlength(txt, font=fb))
+    while tw + 140 > W - 60 and size > 40:  # kecilkan teks panjang supaya muat skrin
+        size -= 4
+        fb = fnt(F_XBOLD, size)
+        tw = int(ImageDraw.Draw(layer).textlength(txt, font=fb))
     w, h = tw + 140, 140
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
